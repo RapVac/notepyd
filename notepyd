@@ -1,0 +1,71 @@
+#!/bin/bash
+
+user="monkeyuser"
+pc="\e[94m"
+cc="\e[0m"
+
+trap leave_app INT SIGTSTP
+
+leave_app() {
+	echo -e "\nPlease use option $pc[5]$cc to exit the application."
+	echo "(enter) to continue."
+}
+
+list() {
+	ls -1N /home/"${user}"/.immune/notepyd
+}
+
+create() {
+	echo -n "Title: "; read title
+	title="${title^^}"
+	if [ -f "/home/"${user}"/.immune/notepyd/${title}" ]; then
+		echo "A note with the name \`${title}' already exists."
+	else
+		echo -n "Body: "; read body
+		echo "$body" >> /home/"${user}"/.immune/notepyd/"${title}"
+	fi
+}
+
+delete() {
+	echo -n "Title: "; read title
+	title="${title^^}"
+	if [ -f "/home/"${user}"/.immune/notepyd/${title}" ]; then
+		echo -n "Are you sure you want to delete the note \`${title}'? [y/N] "; read confirm
+		case $confirm in
+			[Yy] ) rm /home/"${user}"/.immune/notepyd/"${title}"
+			;;
+			[Nn] ) true
+			;;
+			* ) true
+		esac
+	else
+		echo "The note \`${title}' does not exist."
+	fi
+}
+
+view() {
+	echo -n "Title?: "; read title
+	title="${title^^}"
+	if [ -f "/home/"${user}"/.immune/notepyd/${title}" ]; then
+		cat /home/"${user}"/.immune/notepyd/"${title}"
+	else
+		echo "The note \`${title}' does not exist."
+	fi
+}
+
+main() {
+	echo -e "$pc[1]$cc List notes         $pc[4]$cc View a note\n$pc[2]$cc Create a new note  $pc[5]$cc Quit\n$pc[3]$cc Delete a note"
+	selection=0
+	until [ "$selection" = "5" ]; do
+		echo -en "$pc|$cc> "; read selection
+		case $selection in
+			"1" ) list ;;
+			"2" ) create ;;
+			"3" ) delete ;;
+			"4" ) view ;;
+		esac	
+	
+	done
+}
+
+main
